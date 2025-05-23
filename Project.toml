@@ -2,3 +2,9 @@ name = "Zalstats"
 uuid = "2df1ca50-bc10-40bd-96e4-7f9f9518dedf"
 version = "0.1.0"
 authors = ["afrizalhasbi"]
+
+[deps]
+FromFile = "ff7dd447-1dcb-4ce3-b8ac-22a812192de7"
+
+[compat]
+FromFile = "0.1.6"
