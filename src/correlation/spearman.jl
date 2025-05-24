@@ -1,6 +1,10 @@
 include("../common/rankorder.jl")
 
-function spearman(x::AbstractArray{Number}, y::AbstractArray{Number})
+function spearman(x::Array{Number}, y::Array{Number}, hypothesis::Union{String,Nothing}=nothing)
+    @assert length(x) == length(y)
+    if !(hypothesis in ["frequentist", "bayesian", nothing])
+        error("Hypothesis test must be 'frequentist', 'bayesian', or Nothing!")
+    end
     x, y = rankorder(x), rankorder(y)
     N = length(x)
     d = sum((x .- y) .^ 2)

@@ -2,7 +2,7 @@ include("../common/covariance.jl")
 include("../common/stdev.jl")
 
 function pearson(x::Array{Number}, y::Array{Number}, hypothesis::Union{String,Nothing}=nothing)
-    @assert length(x) == length(y)
+    @assert length(x) == length(y), "Vector lengths must be equal"
     if !(hypothesis in ["frequentist", "bayesian", nothing])
         error("Hypothesis test must be 'frequentist', 'bayesian', or Nothing!")
     end
