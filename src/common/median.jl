@@ -1,5 +1,5 @@
 
-function median(v::AbstractVector{Number})
+function median(v::AbstractVector{<:Real})
     v = sort(v)
     N = length(v)
     middle = N / 2

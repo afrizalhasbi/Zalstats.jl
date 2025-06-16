@@ -1,6 +1,6 @@
 include("mean.jl")
 
-function covariance(a::AbstractVector, b::AbstractVector, population::Bool=false)
+function covariance(a::AbstractVector{Real}, b::AbstractVector{Real}, population::Bool=false)
     if length(a) != length(b)
         error("Vector lengths must be equal!")
     end

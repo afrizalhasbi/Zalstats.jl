@@ -1,43 +1,20 @@
-include("../common/stdev.jl")
-include("../common/mean.jl")
-include("../common/result.jl")
+# include("../common/stdev.jl")
+# include("../common/mean.jl")
+# include("../common/result.jl")
+# include("../common/formula.jl")
+include("../common/common.jl")
+include("estimators.jl")
 
-function _compute_coeff_rg(X::AbstractVector{<:Number}, Y::AbstractVector{<:Number}, method::String="ols")
-    intercept = ones(size(X, 1))
-    if X[:, 1] != intercept
-        X = hcat(intercept, X)
-    end
-    X_SD = [stdev(x) for x in eachcol(X)]
-    Y_SD = stdev(Y)
-    if method == "ols"
-        XT = X'
-        B = inv(XT * X) * XT * Y
-        β = B .* (X_SD ./ Y_SD)
-    end
-
-    function regression(V::AbstractVector{<:Number}, std::Bool=false)
-        if std
-            return V .* β
-        else
-            return V .* B
-    end
-
-    return regression
-end
-
-function _regfn(X::AbstractVector{<:Number}, Y::AbstractVector{<:Number}, regfn::Function, hypothesis::String)
+function linreg_metrics(X::AbstractVector{<:Real}, Y::AbstractVector{<:Real}, regfn::Function, hypothesis::Union{String,Nothing}=nothing)
     if !(hypothesis in ["frequentist", "bayesian", nothing])
         error("Hypothesis test must be 'frequentist', 'bayesian', or Nothing!")
     end
-    intercept = ones(size(X, 1))
-    if X[:, 1] != intercept
-        X = hcat(intercept, X)
-    end
-    Ŷ = regfn(X, std=true)
-    Ȳ = mean(Y)
-    ΔYȲ = vec(Y .- Ȳ)
-    ΔŶȲ = vec(Ŷ .- Ȳ)
-    ΔYŶ = vec(Y .- Ŷ)
+
+    y_predicted = regfn(X, std=true)
+    y_mean = mean(Y)
+    y_centered = vec(Y .- y_mean)
+    pred_centered = vec(y_predicted .- y_mean)
+    residuals = vec(Y .- y_predicted)
 
     n, p = size(X)
 
@@ -45,48 +22,78 @@ function _regfn(X::AbstractVector{<:Number}, Y::AbstractVector{<:Number}, regfn:
     df_reg = p - 1    # Model df
     df_resids = n - p # Residual df
 
-    TSS = sum(ΔYȲ .^ 2)   # Σ(i=1 to n; (yi-ȳ)²)  Total Sum of Squares
-    MSS = sum(ΔŶȲ .^ 2)   # Σ(i=1 to n; (ŷi-ȳ)²)  Model/Regression/Explained Sum of Squares
-    RSS_vector = ΔYŶ .^ 2   # Σ(i=1 to n; (yi-ŷi)²) Residual Sum of Squares
-    RSS = sum(RSS_vector)
-    @assert all([TSS >= 0, MSS >= 0, RSS >= 0])
+    tot_ss = sum(y_centered .^ 2)   # Σ(i=1 to n; (yi-ȳ)²)  Total Sum of Squares
+    explained_ss = sum(pred_centered .^ 2)   # Σ(i=1 to n; (ŷi-ȳ)²)  Model/Regression/Explained Sum of Squares
+    resids_ss = residuals .^ 2   # Σ(i=1 to n; (yi-ŷi)²) Residual Sum of Squares
+    resids_ss = sum(resids_ss)
+    @assert all([tot_ss >= 0, explained_ss >= 0, resids_ss >= 0])
 
-    MSR = MSS / df_reg
-    MSE = RSS / (n - p - 1) # Mean Squared error
-    MAE = mean(abs.(ΔYŶ))   # Mean Absolute Error
-    RMSE = sqrt(MSE)        # Root Mean Squared Error
-    SE = sqrt.(MSE .* [inv(X' * X)[i, i] for i in 1:p])  # Standard Error
-    output = Result(SE, MSE, MAE, RMSE, MSR, TSS, MSS, RSS, df_tot, df_reg, df_resids)
-    return output
+    msr = explained_ss / df_reg
+    mse = resids_ss / (n - p - 1) # Mean Squared error
+    mae = mean(abs.(residuals))   # Mean Absolute Error
+    rmse = sqrt(mse)        # Root Mean Squared Error
+    se = sqrt.(mse .* [inv(X' * X)[i, i] for i in 1:p])  # Standard Error
+    metrics = Result(se, mse, mae, rmse, msr, tot_ss, explained_ss, resids_ss, df_tot, df_reg, df_resids)
+    return metrics
 end
 
+function linreg(
+    X::AbstractArray{<:Real},
+    Y::AbstractVector{<:Real},
+    ci::Float64=0.99,
+    estimator::Function=ols,
+    hypothesis::Union{String,Nothing}=nothing
+)
+
+    @assert ci >= 1 && ci <= 0, throw(ArgumentError("Confidence interval must be in the range of 0-1!"))
+    @assert length(X) == length(Y), throw(ArgumentError("Vectors must have equal length!"))
+
+    intercept = ones(size(X, 1))
+    X = hcat(intercept, X)
+
+    reg_fn = estimator(X, Y)
+    reg_metrics = linreg_metrics(X, Y, reg_fn, hypothesis)
+
+    return reg_fn, reg_metrics
+end
 
 """
-    llinreg(
-        X::AbstractVector{<:Number},
-        Y::AbstractVector{<:Number};
-        CI::Float64=0.99,
-        method::String="ols",
-        hypothesis::Bool=true
+    linreg(
+        formula::Formula, construct with ~(x, y),
+        ci::Float64=0.99,
+        estimator::Function=ols,
+        hypothesis::Union{Bool, Nothing}=nothing
         )
 
 Implementation of a vanilla linear regression.
 
 Function args
-  1. vars::regvars    ==> A regression variable struct. Instantiate with regvars(y,hcat(x1, x2, ..xn)).
-  2. CI::Number       ==> Confidence interval percentages, select between 0 and 1. Mandatory variable for best practices!
-  3. method::String   ==> Coefficient estimation method. Currently only supports OLS.
-  4. hypothesis::Bool ==> Run hypothesis testing on the estimated coefficients. Default to true.
+  1. formula::Formula    ==> Formula.
+  2. ci::Float64       ==> Confidence interval percentages, select between 0 and 1. Mandatory variable for best practices!
+  3. estimator::Function   ==> Coefficient estimation method. Currently only supports OLS.
+  4. hypothesis::Union{Bool, Nothing}=nothing ==> Run hypothesis testing on the estimated coefficients. Default to nothing.
 """
-function linreg(X::AbstractVector{<:Number}, Y::AbstractVector{<:Number};
-    CI::Float64=0.99, method::String="ols",
-    hypothesis::Bool=true)
-    @assert CI >= 1 && CI <= 0, error("CI must be in the range of 0-1!")
-    @assert length(X) == length(Y), "Vectors must have equal length"
-
-    reg_fn = _compute_coeff_rg(X, Y, method)
-
-    regout = _regfn(X, Y, reg_fn, hypothesis)
-
-    return reg_fn, regout
+function linreg(
+    formula::Formula{Real},
+    ci::Float64=0.99,
+    estimator::Function=ols,
+    hypothesis::Union{Bool,Nothing}=nothing
+)
+    X = formula.x
+    Y = formula.y
+    linreg(X, Y, ci, estimator, hypothesis)
 end
+
+# alias
+linreg_ols(
+    formula::Formula{Real},
+    ci::Float64=0.99,
+    hypothesis::Bool=true
+) = linreg(formula, ci, ols, hypothesis)
+
+linreg_ols(
+    X::AbstractArray{<:Real},
+    Y::AbstractVector{<:Real},
+    ci::Float64=0.99,
+    hypothesis::Bool=true
+) = linreg(X, Y, ci, ols, hypothesis)

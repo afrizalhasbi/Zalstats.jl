@@ -1,6 +1,9 @@
-include("../common/rankorder.jl")
+include("../common/common.jl")
 
-function spearman(x::Array{Number}, y::Array{Number}, hypothesis::Union{String,Nothing}=nothing)
+function spearman(formula::Formula, hypothesis::Union{String,Nothing}=nothing)
+    x = formula.x
+    y = formula.y
+
     @assert length(x) == length(y)
     if !(hypothesis in ["frequentist", "bayesian", nothing])
         error("Hypothesis test must be 'frequentist', 'bayesian', or Nothing!")

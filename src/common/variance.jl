@@ -5,6 +5,3 @@ function variance(a::AbstractVector{<:Number})
     TSS = sum((a .- mean(a)) .^ 2)
     return TSS / (N - 1)
 end
-
-res = variance([1, 2, 3])
-println(res)
