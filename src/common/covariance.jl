@@ -1,6 +1,6 @@
 include("mean.jl")
 
-function covariance(a::AbstractVector{Real}, b::AbstractVector{Real}, population::Bool=false)
+function covariance(a::AbstractVector{<:Real}, b::AbstractVector{<:Real}, population::Bool=false)
     if length(a) != length(b)
         error("Vector lengths must be equal!")
     end
@@ -14,7 +14,7 @@ function covariance(a::AbstractVector{Real}, b::AbstractVector{Real}, population
     return numer / (N - 1)
 end
 
-function covariance(m::Matrix, population::Bool=false)
+function covariance(m::Matrix{<:Real}, population::Bool=false)
     rows, _ = size(m)
     nuT = (mean.(eachcol(m)))'
     mnuT = m .- nuT

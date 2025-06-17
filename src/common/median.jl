@@ -1,9 +1,9 @@
 
 function median(v::AbstractVector{<:Real})
     v = sort(v)
-    N = length(v)
-    middle = N / 2
-    if N % 2 == 0
+    n = length(v)
+    middle = n / 2
+    if n % 2 == 0
         return (v[Int(middle)] + v[Int(middle)+1]) / 2
     else
         return v[Int(ceil(middle))]

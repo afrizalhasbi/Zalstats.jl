@@ -8,7 +8,7 @@ function include_dir(dir::AbstractString)
     end
 end
 
-function include_all_subdirs(root::AbstractString=pwd())
+function include_submodules(root::AbstractString=pwd())
     subdirs = filter(p -> isdir(p),
         readdir(root; join=true))
 
@@ -18,6 +18,6 @@ function include_all_subdirs(root::AbstractString=pwd())
     end
 end
 
-include_all_subdirs()
+include_submodules()
 
 end

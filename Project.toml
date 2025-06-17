@@ -1,6 +1,6 @@
 name = "Zalstats"
 uuid = "2df1ca50-bc10-40bd-96e4-7f9f9518dedf"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["afrizalhasbi"]
 
 [deps]

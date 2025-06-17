@@ -1,16 +1,12 @@
-# include("../common/stdev.jl")
-# include("../common/mean.jl")
-# include("../common/result.jl")
-# include("../common/formula.jl")
 include("../common/common.jl")
 include("estimators.jl")
 
-function linreg_metrics(X::AbstractVector{<:Real}, Y::AbstractVector{<:Real}, regfn::Function, hypothesis::Union{String,Nothing}=nothing)
+function linreg_metrics(X::AbstractVector{<:Real}, Y::AbstractVector{<:Real}, reg_fn::Function, hypothesis::Union{String,Nothing}=nothing)
     if !(hypothesis in ["frequentist", "bayesian", nothing])
         error("Hypothesis test must be 'frequentist', 'bayesian', or Nothing!")
     end
 
-    y_predicted = regfn(X, std=true)
+    y_predicted = reg_fn(X, std=true)
     y_mean = mean(Y)
     y_centered = vec(Y .- y_mean)
     pred_centered = vec(y_predicted .- y_mean)
@@ -77,7 +73,7 @@ function linreg(
     formula::Formula{Real},
     ci::Float64=0.99,
     estimator::Function=ols,
-    hypothesis::Union{Bool,Nothing}=nothing
+    hypothesis::Union{String,Nothing}=nothing
 )
     X = formula.x
     Y = formula.y
@@ -88,12 +84,12 @@ end
 linreg_ols(
     formula::Formula{Real},
     ci::Float64=0.99,
-    hypothesis::Bool=true
+    hypothesis::Union{String,Nothing}=nothing
 ) = linreg(formula, ci, ols, hypothesis)
 
 linreg_ols(
     X::AbstractArray{<:Real},
     Y::AbstractVector{<:Real},
     ci::Float64=0.99,
-    hypothesis::Bool=true
+    hypothesis::Union{String,Nothing}=nothing
 ) = linreg(X, Y, ci, ols, hypothesis)
