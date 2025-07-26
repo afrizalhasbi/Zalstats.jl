@@ -8,3 +8,5 @@ end
 function stdev(a::Real)
     return sqrt(a)
 end
+
+function stdev_pooled()end

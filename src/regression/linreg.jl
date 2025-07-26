@@ -1,12 +1,13 @@
 include("../common/common.jl")
 include("estimators.jl")
+include("params.jl")
 
-function linreg_metrics(X::AbstractVector{<:Real}, Y::AbstractVector{<:Real}, reg_fn::Function, hypothesis::Union{String,Nothing}=nothing)
+function __linreg_metrics(X::AbstractVector{<:Real}, Y::AbstractVector{<:Real}, params::AbstractRegParams, hypothesis::Union{String,Nothing}=nothing)
     if !(hypothesis in ["frequentist", "bayesian", nothing])
         error("Hypothesis test must be 'frequentist', 'bayesian', or Nothing!")
     end
 
-    y_predicted = reg_fn(X, std=true)
+    y_predicted = params(X, std=true)
     y_mean = mean(Y)
     y_centered = vec(Y .- y_mean)
     pred_centered = vec(y_predicted .- y_mean)
@@ -47,10 +48,10 @@ function linreg(
     intercept = ones(size(X, 1))
     X = hcat(intercept, X)
 
-    reg_fn = estimator(X, Y)
-    reg_metrics = linreg_metrics(X, Y, reg_fn, hypothesis)
+    params = estimator(X, Y)
+    reg_metrics = __linreg_metrics(X, Y, params, hypothesis)
 
-    return reg_fn, reg_metrics
+    return params, reg_metrics
 end
 
 """
@@ -75,9 +76,7 @@ function linreg(
     estimator::Function=ols,
     hypothesis::Union{String,Nothing}=nothing
 )
-    X = formula.x
-    Y = formula.y
-    linreg(X, Y, ci, estimator, hypothesis)
+    linreg(formula.x, formula.y, ci, estimator, hypothesis)
 end
 
 # alias
@@ -85,7 +84,7 @@ linreg_ols(
     formula::Formula{Real},
     ci::Float64=0.99,
     hypothesis::Union{String,Nothing}=nothing
-) = linreg(formula, ci, ols, hypothesis)
+) = linreg(formula.x, formula.y, ci, ols, hypothesis)
 
 linreg_ols(
     X::AbstractArray{<:Real},
@@ -93,3 +92,18 @@ linreg_ols(
     ci::Float64=0.99,
     hypothesis::Union{String,Nothing}=nothing
 ) = linreg(X, Y, ci, ols, hypothesis)
+
+linreg_ridge(
+    formula::Formula{Real},
+    lambda::Float64,
+    ci::Float64=0.99,
+    hypothesis::Union{String,Nothing}=nothing
+) = linreg(formula.x, formula.y, ci, ridge(lambda), hypothesis)
+
+linreg_ridge(
+    X::AbstractArray{<:Real},
+    Y::AbstractVector{<:Real},
+    lambda::Float64,
+    ci::Float64=0.99,
+    hypothesis::Union{String,Nothing}=nothing
+) = linreg(X, Y, ci, ridge(lambda), hypothesis)

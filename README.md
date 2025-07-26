@@ -4,7 +4,7 @@ Intended to be dependency-free (maybe with the exception of plotting and utility
 
 Not even using the base statistics. Will try not to use Distributions too.
 
-## Version 1 To Do List
+## Version 0.1 To Do List
 
 ### Analysis Methods
 - [x] pearson
@@ -12,16 +12,17 @@ Not even using the base statistics. Will try not to use Distributions too.
 - [ ] kendall a
 - [ ] kendall b
 - [ ] kendall c
-- [x] linear regression
-- [ ] logistic regression
-- [ ] anova
-- [ ] repeat measures anova
-- [ ] ancova
-- [ ] manova
-- [ ] independent sample t test
-- [ ] dependent sample t test
-- [ ] one sample t test
+- [ ] ols regression
+- [ ] ridge regression
+- [ ] weighted least squares
+- [ ] linear discriminant analysis
+- [ ] naive bayes
+- [ ] pca
+- [ ] k-means
+- [ ] hierarchical clustering
+- [ ] t-tests
 - [ ] contingency table
+- [ ] ANOVA
 
 ### Features
 - [ ] frequentist hypothesis tests
