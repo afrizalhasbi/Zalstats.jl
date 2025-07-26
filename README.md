@@ -12,8 +12,8 @@ Not even using the base statistics. Will try not to use Distributions too.
 - [ ] kendall a
 - [ ] kendall b
 - [ ] kendall c
-- [ ] ols regression
-- [ ] ridge regression
+- [x] ols regression
+- [x] ridge regression
 - [ ] weighted least squares
 - [ ] linear discriminant analysis
 - [ ] naive bayes
