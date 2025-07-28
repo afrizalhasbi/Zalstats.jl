@@ -20,7 +20,8 @@ Not even using the base statistics. Will try not to use Distributions too.
 - [ ] pca
 - [ ] k-means
 - [ ] hierarchical clustering
-- [ ] t-tests
+- [ ] one sample t-test
+- [ ] independent samples t-test
 - [ ] contingency table
 - [ ] ANOVA
 

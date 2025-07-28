@@ -1,7 +1,7 @@
 include("../common/common.jl")
 
 
-function onesample_ttest(
+function ttest_onesample(
     V::AbstractVector{<:Real},
     target::Float64,
     ci::Float64=0.99,
