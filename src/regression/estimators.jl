@@ -46,7 +46,8 @@ function ridge(X::AbstractArray{<:Real}, Y::AbstractVector{<:Real}, lambda::Floa
     XT = X'
 
     lambda_i = Matrix(I, size(X)) .* lambda
-    B = inv(XT * X + lambda_i) * XT * Y    B_std = B .* (X_SD ./ Y_SD)
+    B = inv(XT * X + lambda_i) * XT * Y
+    B_std = B .* (X_SD ./ Y_SD)
 
     @assert typeof(B) == AbstractVector
     @assert typeof(B_std) == AbstractVector
@@ -58,16 +59,4 @@ function ridge(lambda::Float64)
         ridge(X, Y, lambda)
     end
     _ridge
-end
-
-function logistic(X::AbstractArray{<:Real}, Y::AbstractVector{<:Real})
-    X_SD = [stdev(x) for x in eachcol(X)]
-    Y_SD = stdev(Y)
-    XT = X'
-    B = inv(XT * X) * XT * Y
-    B_std = B .* (X_SD ./ Y_SD)
-
-    @assert typeof(B) == AbstractVector
-    @assert typeof(B_std) == AbstractVector
-    LogRegParams(B, B_std)
 end

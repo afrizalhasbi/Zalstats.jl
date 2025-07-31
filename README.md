@@ -17,11 +17,12 @@ Not even using the base statistics. Will try not to use Distributions too.
 - [x] weighted least squares
 - [ ] linear discriminant analysis
 - [ ] naive bayes
-- [ ] pca
+- [x] pca
 - [ ] k-means
 - [ ] hierarchical clustering
-- [ ] one sample t-test
-- [ ] independent samples t-test
+- [x] one sample t-test
+- [x] student t-test
+- [x] welch t-test
 - [ ] contingency table
 - [ ] ANOVA
 
